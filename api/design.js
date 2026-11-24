@@ -1,8 +1,5 @@
-// Vercel serverless function: reads a customer's grill photo(s) and/or description with Claude
-// and returns a tooth-by-tooth design the 3D builder can render.
-// Setup: in Vercel > Project > Settings > Environment Variables add ANTHROPIC_API_KEY, then redeploy.
-const MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-5-5';
-
+// Reads a customer's grill photo(s) and/or description with AI and returns a tooth-by-tooth design for the 3D builder.
+// Free option: set GEMINI_API_KEY (free key from aistudio.google.com). Optional paid option: ANTHROPIC_API_KEY.
 const SYSTEM = `You read photos and descriptions of custom dental grillz and convert them into a design spec.
 Return ONLY a JSON object, no prose, matching exactly:
 {
@@ -44,33 +41,52 @@ function clean(d){
   };
 }
 
+
+async function callGemini(key, model, text, images) {
+  const parts = [...images.map(im => ({ inline_data: { mime_type: im.media_type, data: im.data } })), { text }];
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM }] }, contents: [{ role: 'user', parts }],
+      generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
+  });
+  if (!r.ok) { const e = new Error('gemini ' + r.status); e.status = r.status; throw e; }
+  const j = await r.json();
+  return ((j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts) || []).map(p => p.text || '').join('');
+}
+async function callClaude(key, model, text, images) {
+  const content = [...images.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.media_type, data: im.data } })), { type: 'text', text }];
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+    body: JSON.stringify({ model, max_tokens: 1200, system: SYSTEM, messages: [{ role: 'user', content }] })
+  });
+  if (!r.ok) { const e = new Error('claude ' + r.status); e.status = r.status; throw e; }
+  const j = await r.json();
+  return (j.content || []).map(c => c.text || '').join('');
+}
+async function readDesign(body, env) {
+  const text = String(body.text || '').slice(0, 2000);
+  const images = (Array.isArray(body.images) ? body.images : []).slice(0, 3)
+    .filter(im => im && /^image\/(jpeg|png|webp)$/.test(im.media_type) && typeof im.data === 'string' && im.data.length < 2000000);
+  if (!text && !images.length) return { status: 400, json: { error: 'Send text or a photo' } };
+  const prompt = (images.length ? 'Reference photo(s) of the grill the customer wants are attached. ' : '') +
+    (text ? `Customer description: """${text}"""` : 'No description was given.') + '\nReturn the JSON design.';
+  let out;
+  if (env.GEMINI_API_KEY) {
+    const models = env.GEMINI_MODEL ? [env.GEMINI_MODEL] : ['gemini-flash-latest', 'gemini-2.5-flash'];
+    for (const m of models) { try { out = await callGemini(env.GEMINI_API_KEY, m, prompt, images); break; } catch (e) { if (e.status === 429) return { status: 429, json: { error: 'busy' } }; } }
+  } else if (env.ANTHROPIC_API_KEY) {
+    try { out = await callClaude(env.ANTHROPIC_API_KEY, env.CLAUDE_MODEL || 'claude-sonnet-5-5', prompt, images); } catch (e) {}
+  } else return { status: 503, json: { error: 'AI not configured' } };
+  if (!out) return { status: 502, json: { error: 'AI request failed' } };
+  const m = out.match(/\{[\s\S]*\}/);
+  if (!m) return { status: 502, json: { error: 'No design returned' } };
+  try { return { status: 200, json: clean(JSON.parse(m[0])) }; } catch (e) { return { status: 502, json: { error: 'Bad design' } }; }
+}
+
+// Vercel: api/design.js  (env vars in Vercel > Settings > Environment Variables)
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') { res.status(405).json({error:'POST only'}); return; }
-  if (!process.env.ANTHROPIC_API_KEY) { res.status(503).json({error:'AI not configured'}); return; }
-  try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const text = String(body.text || '').slice(0, 2000);
-    const images = (Array.isArray(body.images) ? body.images : []).slice(0, 3)
-      .filter(im => im && /^image\/(jpeg|png|webp)$/.test(im.media_type) && typeof im.data === 'string' && im.data.length < 2_000_000);
-    if (!text && !images.length) { res.status(400).json({error:'Send text or a photo'}); return; }
-    const content = [
-      ...images.map(im => ({ type:'image', source:{ type:'base64', media_type:im.media_type, data:im.data } })),
-      { type:'text', text: (images.length ? 'Reference photo(s) of the grill the customer wants are attached. ' : '') +
-        (text ? `Customer description: """${text}"""` : 'No description was given.') + '\nReturn the JSON design.' }
-    ];
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{ 'x-api-key':process.env.ANTHROPIC_API_KEY, 'anthropic-version':'2023-06-01', 'content-type':'application/json' },
-      body: JSON.stringify({ model:MODEL, max_tokens:1200, system:SYSTEM, messages:[{ role:'user', content }] })
-    });
-    if (!r.ok) { res.status(502).json({error:'AI request failed', status:r.status}); return; }
-    const j = await r.json();
-    const out = (j.content || []).map(c => c.text || '').join('');
-    const m = out.match(/\{[\s\S]*\}/);
-    if (!m) { res.status(502).json({error:'No design returned'}); return; }
-    res.status(200).json(clean(JSON.parse(m[0])));
-  } catch (e) {
-    res.status(500).json({ error:'Could not read the design' });
-  }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
+  try { const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {}); const r = await readDesign(body, process.env); res.status(r.status).json(r.json); }
+  catch (e) { res.status(500).json({ error: 'Could not read the design' }); }
 };
-module.exports.clean = clean;
+module.exports.readDesign = readDesign;

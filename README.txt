@@ -18,12 +18,27 @@ GLINT GRILLZ SITE — HOW TO GO LIVE
 
 Keep the "work" folder next to index.html. It holds your videos and photos.
 
-AUTOMATIC PHOTO READING (Describe it section)
-   When a customer uploads a grill photo or describes one, the site asks Claude (AI) to read it
-   tooth by tooth and builds the 3D preview from that. This needs a small server piece (api/design.js),
-   so it works when the site runs on Vercel, not on GitHub Pages.
-   1. On vercel.com: Add New > Project > Import your GitHub repo "glint-site" > Deploy.
-   2. Get an API key at console.anthropic.com (API Keys).
-   3. In Vercel: Project > Settings > Environment Variables > add ANTHROPIC_API_KEY = your key.
-   4. Deployments > Redeploy. Your site (with camera try-on and photo reading) is at the vercel.app link.
-   Each photo read is one AI request, typically a few cents. Without the key, customers simply pick the options themselves.
+AUTOMATIC PHOTO READING (Describe it section) - FREE SETUP
+   When a customer uploads a grill photo or describes one, AI reads it tooth by tooth and the
+   3D preview is built from that. This runs in a small server piece, so the site must be hosted
+   on Cloudflare Pages (free, business use allowed) instead of GitHub Pages.
+
+   A. Get a free Gemini key (no card needed)
+      1. Go to aistudio.google.com and sign in with a Google account.
+      2. Click "Get API key" > "Create API key". Copy it.
+
+   B. Host on Cloudflare Pages (free)
+      1. Go to dash.cloudflare.com and sign up (free).
+      2. Workers & Pages > Create > Pages > Connect to Git > pick "glint-site".
+      3. Build settings: Framework preset "None", build command empty, output directory "/". Save and Deploy.
+      4. Project > Settings > Variables and Secrets > Add: name GEMINI_API_KEY, value = your key (type Secret).
+      5. Deployments > retry the latest deployment so it picks up the key.
+      Your site is at https://glint-site.pages.dev (live camera try-on + photo reading).
+      Every change pushed to GitHub redeploys automatically.
+
+   Notes
+   - Gemini's free tier has daily limits; a small shop won't usually hit them. If it does, customers
+     simply pick the options themselves until the next day.
+   - On Gemini's free tier, Google may use what is sent (the customer photos/text) to improve its products.
+     Their paid tier doesn't. Optional: set ANTHROPIC_API_KEY instead to use Claude (paid, a few cents per photo).
+   - Vercel also works (api/design.js), but Vercel's free plan is for non-commercial use.
