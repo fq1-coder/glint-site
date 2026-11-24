@@ -1287,7 +1287,7 @@ function parseIdea(txt){const t=' '+txt.toLowerCase()+' ',has=r=>r.test(t);const
  if(A.metal==='k10'){if(has(/rose|pink gold/))A.color='rose';else if(has(/white gold|white/))A.color='white';else if(has(/yellow/))A.color='yellow'}
  if(has(/moissanite/))A.dia='moissanite';else if(has(/\blab\b|lab.?grown/))A.dia='labvvs';else if(has(/vvs/))A.dia='vvs';else if(has(/\bvs\b/))A.dia='vs';else if(has(/\bsi\b/))A.dia='si';
  if(A.style==='iced'&&has(/moissanite|lab|vvs|\bvs\b|\bsi\b|natural/))got.push('stones');
- const g=has(/ruby|\bred\b/)?'ruby':has(/sapphire|\bblue\b/)?'sapphire':has(/emerald|green/)?'emerald':has(/opal/)?'opal':(has(/\bpink\b/)&&!has(/pink gold/))?'pink':'none';if(g!=='none'){A.gem=g;got.push('gem')}
+ const g=has(/rub(y|ies)|\bred\b/)?'ruby':has(/sapphire|\bblue\b/)?'sapphire':has(/emerald|green/)?'emerald':has(/opal/)?'opal':(has(/\bpink\b/)&&!has(/pink gold/))?'pink':'none';if(g!=='none'){A.gem=g;got.push('gem')}
  if(has(/fang|vampire/)){A.fangs=true;got.push('fangs')}
  if(has(/letter|name|initial|heart|snake|butterfly|cross|logo|word|star|dollar|\$|engrav|custom/)){A.custom=true;got.push('custom details')}
  if(has(/rush|asap|urgent|quick|fast|soon/)){A.rush=true;got.push('rush')}
