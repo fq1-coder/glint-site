@@ -760,8 +760,12 @@ const PRICES = {
     k10:   {moissanite:350, labvvs:450, si:null, vs:null, vvs:null}
   },
   turnaround:'3–4 weeks', rushTurnaround:'about 2 weeks',
-  gem:60, fang:30, mold:25, rush:90
+  gem:60, fang:30, mold:25, rush:90,
+  // Website fee: added on top of every price above and built into what customers see (0.10 = 10%).
+  // The prices above are the shop's own prices; customers see each one plus this fee, rounded to the dollar.
+  fee:0.10
 };
+const sell=v=>v==null?null:Math.round(v*(1+PRICES.fee)); // customer-facing price incl. website fee
 /* ===== Contact — PLACEHOLDERS: replace with your real details ===== */
 const CONTACT = {
   instagram:'yourhandle',          // Instagram handle, no @
@@ -1158,22 +1162,22 @@ const undo=[];const snap=()=>{undo.push(JSON.stringify(S));if(undo.length>60)und
 const mouth=$('#mouth');
 
 $('#brushes').innerHTML=[...FIN_KEYS,'gem','erase'].map(k=>`<button class="br" data-brush="${k}"><span class="sw ${k}">${k==='erase'?icon('i-x'):''}</span>${k==='erase'?'Erase':k==='gem'?'Gem':PRICES.finishes[k].label}</button>`).join('');
-$('#gems').innerHTML=Object.entries(GEMS).map(([k,g])=>`<button class="chip" data-gem="${k}"><span class="gdot" style="background:radial-gradient(circle at 35% 30%,${g.c[0]},${g.c[1]} 55%,${g.c[2]})"></span>${g.label}</button>`).join('');$('#gemP').textContent=money(PRICES.gem);
+$('#gems').innerHTML=Object.entries(GEMS).map(([k,g])=>`<button class="chip" data-gem="${k}"><span class="gdot" style="background:radial-gradient(circle at 35% 30%,${g.c[0]},${g.c[1]} 55%,${g.c[2]})"></span>${g.label}</button>`).join('');$('#gemP').textContent=money(sell(PRICES.gem));
 const PRESETS=[['Top 6',s=>{for(let i=1;i<7;i++)s.top[i]=f(s)}],['Top 8',s=>{s.top.fill(f(s))}],['Top + bottom 8',s=>{s.top.fill(f(s));s.bottom.fill(f(s))}],['Single tooth',s=>{s.top[2]=f(s)}],['Fang set',s=>{s.top[1]=s.top[6]=f(s);s.fangs=true}]];
 function f(s){return (s.brush==='erase'||s.brush==='gem')?'polished':s.brush}
 $('#presets').innerHTML=PRESETS.map(([l],i)=>`<button class="chip" data-preset="${i}">${l}</button>`).join('');
-$('#metals').innerHTML=Object.entries(PRICES.metals).map(([k,m])=>`<button class="chip" data-metal="${k}">${m.short}<small>${money(m.per)}</small></button>`).join('');
+$('#metals').innerHTML=Object.entries(PRICES.metals).map(([k,m])=>`<button class="chip" data-metal="${k}">${m.short}<small>${money(sell(m.per))}</small></button>`).join('');
 $('#colors').innerHTML=Object.entries(COLORS).map(([k,c])=>`<button class="chip" data-color="${k}"><span class="dot" style="background:${c.c}"></span>${c.label}</button>`).join('');
 $('#dias').innerHTML=['Natural','Lab'].map(gp=>`<div class="dgrp"><span class="dgl">${gp==='Natural'?'Natural diamonds':'Lab stones'}</span><div class="chips">${Object.entries(PRICES.diamonds).filter(([,d])=>d.group===gp).map(([k,d])=>`<button class="chip" data-dia="${k}">${d.short}<small></small></button>`).join('')}</div></div>`).join('');
-$('#extras').innerHTML=`<button class="swr" role="switch" data-x="fangs"><span>Fangs on top canines<small>+${money(PRICES.fang)} per fang</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="custom"><span>Custom design<small>Letters, hearts, snakes and more · quoted after review</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="rush"><span>Rush order<small>+${money(PRICES.rush)} · ready in ${PRICES.rushTurnaround}</small></span><span class="trk"></span></button>`;
+$('#extras').innerHTML=`<button class="swr" role="switch" data-x="fangs"><span>Fangs on top canines<small>+${money(sell(PRICES.fang))} per fang</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="custom"><span>Custom design<small>Letters, hearts, snakes and more · quoted after review</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="rush"><span>Rush order<small>+${money(sell(PRICES.rush))} · ready in ${PRICES.rushTurnaround}</small></span><span class="trk"></span></button>`;
 
 function calc(st=S){const m=PRICES.metals[st.metal];const g={};let n=0,sum=0,fangs=0,gems=0;
- let quoted=false;['top','bottom'].forEach(a=>st[a].forEach((fn,i)=>{if(!fn)return;n++;const p=fn==='iced'?((PRICES.iced[st.metal]||{})[st.dia]??null):m.per+PRICES.finishes[fn].add;
+ let quoted=false;['top','bottom'].forEach(a=>st[a].forEach((fn,i)=>{if(!fn)return;n++;const p=sell(fn==='iced'?((PRICES.iced[st.metal]||{})[st.dia]??null):m.per+PRICES.finishes[fn].add);
   g[fn]=g[fn]||{c:0,s:0,q:false};g[fn].c++;if(p==null){g[fn].q=true;quoted=true}else{g[fn].s+=p;sum+=p}if(a==='top'&&st.fangs&&(i===1||i===6))fangs++;if(st.gems[a][i])gems++}));
  const lines=FIN_KEYS.filter(k=>g[k]).map(k=>[`${g[k].c} × ${PRICES.finishes[k].label}${k==='iced'?' ('+PRICES.diamonds[st.dia].label.toLowerCase()+')':''}`,g[k].q?'Quoted':g[k].s]);
- if(gems){lines.push([`${gems} × Gem accent`,gems*PRICES.gem]);sum+=gems*PRICES.gem}
- if(fangs){lines.push([`${fangs} × Fang shape`,fangs*PRICES.fang]);sum+=fangs*PRICES.fang}
- if(n){lines.push(['Mold kit',PRICES.mold]);sum+=PRICES.mold;if(st.rush){lines.push(['Rush order',PRICES.rush]);sum+=PRICES.rush}if(st.custom)lines.push(['Custom design','Quoted'])}
+ if(gems){lines.push([`${gems} × Gem accent`,gems*sell(PRICES.gem)]);sum+=gems*sell(PRICES.gem)}
+ if(fangs){lines.push([`${fangs} × Fang shape`,fangs*sell(PRICES.fang)]);sum+=fangs*sell(PRICES.fang)}
+ if(n){lines.push(['Mold kit',sell(PRICES.mold)]);sum+=sell(PRICES.mold);if(st.rush){lines.push(['Rush order',sell(PRICES.rush)]);sum+=sell(PRICES.rush)}if(st.custom)lines.push(['Custom design','Quoted'])}
  return {n,sum,lines,gems,quoted,iced:!!g.iced,top:st.top.filter(Boolean).length,bot:st.bottom.filter(Boolean).length}}
 function metalName(st=S){const m=PRICES.metals[st.metal];return m.colors.length>1?`${m.label}, ${COLORS[st.color].label.toLowerCase()}`:m.label}
 function gemDesc(st=S){const k={};['top','bottom'].forEach(a=>st.gems[a].forEach(x=>{if(x)k[x]=(k[x]||0)+1}));return Object.entries(k).map(([g,n])=>`${n} ${GEMS[g].label.toLowerCase()}`).join(', ')}
@@ -1191,7 +1195,7 @@ function draw(){const m=PRICES.metals[S.metal];if(!m.colors.includes(S.color))S.
  $$('[data-color]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.color===S.color);b.disabled=!m.colors.includes(b.dataset.color)});
  $('#colorNote').textContent=m.colors.length>1?'':`${m.short} comes in white only`;
  const c=calc();
- $$('[data-dia]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.dia===S.dia);b.disabled=!c.iced;const v=(PRICES.iced[S.metal]||{})[b.dataset.dia];b.querySelector('small').textContent=v==null?'quote':money(v)});
+ $$('[data-dia]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.dia===S.dia);b.disabled=!c.iced;const v=sell((PRICES.iced[S.metal]||{})[b.dataset.dia]);b.querySelector('small').textContent=v==null?'quote':money(v)});
  $('#diaNote').textContent=c.iced?'price per iced tooth':'paint a tooth Iced to choose';
  $$('[data-gem]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.gem===S.gemColor&&S.brush==='gem'));
  $$('[data-x]').forEach(b=>b.setAttribute('aria-checked',!!S[b.dataset.x]));
@@ -1256,7 +1260,7 @@ function mini(fin,p){if(G3O){const st={top:[null,null,fin,fin,fin,fin,null,null]
  G3O.render(st,{yaw:.32,pitch:.12,dist:6.4,target:[0,.55,-.1],bg:[srgb('#141414'),srgb('#0a0a0a')]},720,400);return `<img src="${G3O.canvas.toDataURL('image/jpeg',.9)}" alt="" style="width:100%;height:auto;border-radius:1rem">`}const u=100,ws=[.78,1,1,.78],hs=[1.05,1.25,1.25,1.05];let x=200-(3.56*u+.15*u)/2,out=defs(p,'yellow',u);
  ws.forEach((w,i)=>{const W=w*u,xc=x+W/2,t=(xc-200)/185;out+=`<g transform="translate(${R(xc)},${R(70-14*t*t)}) rotate(${(-t*5).toFixed(2)}) translate(${R(-W/2)},-10)">${toothSVG(fin,W,hs[i]*u,false,p+'c'+i,p,'yellow',true)}</g>`;x+=W+.05*u});
  return `<svg viewBox="0 0 400 220" aria-hidden="true">${out}${gum('top',200,70,u,3.71*u,p)}</svg>`}
-$('#cards').innerHTML=FIN_KEYS.map((k,i)=>{const F=PRICES.finishes[k];const minD=Math.min(...Object.values(PRICES.iced).flatMap(o=>Object.values(o)).filter(v=>v!=null)),from=k==='iced'?minD:PRICES.metals.silver.per+F.add;
+$('#cards').innerHTML=FIN_KEYS.map((k,i)=>{const F=PRICES.finishes[k];const minD=Math.min(...Object.values(PRICES.iced).flatMap(o=>Object.values(o)).filter(v=>v!=null)),from=sell(k==='iced'?minD:PRICES.metals.silver.per+F.add);
  return `<li class="card rv" style="--d:${i*90}ms"><a href="#build" data-use="${k}"><article class="art"><div class="meta"><span>Finish — 0${i+1}</span><span class="badge">${icon('i-aur')}</span></div>
  <div class="mini">${mini(k,'f'+i)}</div><div><h3>${F.label}</h3><p>${F.desc}</p><div class="tags"><span class="tag">From ${money(from)} / tooth</span><span class="tag go">Use this finish</span></div></div></article></a></li>`}).join('');
 document.addEventListener('click',e=>{const u=e.target.closest('[data-use]');if(!u)return;e.preventDefault();S.brush=u.dataset.use;

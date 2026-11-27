@@ -42,3 +42,8 @@ AUTOMATIC PHOTO READING (Describe it section) - FREE SETUP
    - On Gemini's free tier, Google may use what is sent (the customer photos/text) to improve its products.
      Their paid tier doesn't. Optional: set ANTHROPIC_API_KEY instead to use Claude (paid, a few cents per photo).
    - Vercel also works (api/design.js), but Vercel's free plan is for non-commercial use.
+
+PRICES AND THE WEBSITE FEE
+   The shop's own prices are in the PRICES table near the top of the script in index.html.
+   PRICES.fee (0.10 = 10%) is added on top of every price and built into what customers see.
+   To work out the shop's share of an order: customer total / 1.10. Your 10% is the rest.
