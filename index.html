@@ -561,7 +561,7 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
    <div class="grp"><div class="gl">Gem accents <em>+<span id="gemP"></span> each · use the Gem brush</em></div><div class="chips" id="gems"></div></div>
    <div class="grp"><div class="gl">Extras</div><div class="sws" id="extras"></div></div>
    <div class="price">
-    <div class="ptop"><div><div class="k">Estimated total</div><div class="total" id="total">$0</div></div><div class="eta" id="eta">Pick a tooth to start</div></div>
+    <div class="ptop"><div><div class="k">Starting at</div><div class="total" id="total">$0</div></div><div class="eta" id="eta">Pick a tooth to start</div></div>
     <ul class="lines" id="lines"></ul>
     <div class="pacts">
      <button class="pill dark arr" id="reqB" type="button"><span class="pi">Request this build<span class="bd"><svg class="ico ur"><use href="#i-aur"/></svg></span></span></button>
@@ -597,7 +597,7 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
    <div class="d3">
     <div class="dview" id="dView"><canvas id="dg3" aria-label="3D preview of your described grill"></canvas><span class="m-hint">Drag to turn</span></div>
     <div class="dsum">
-     <div class="price"><div class="ptop"><div><div class="k">Estimated total</div><div class="total" id="dTotal">$0</div></div><div class="eta" id="dEta"></div></div><ul class="lines" id="dLines"></ul></div>
+     <div class="price"><div class="ptop"><div><div class="k">Starting at</div><div class="total" id="dTotal">$0</div></div><div class="eta" id="dEta"></div></div><ul class="lines" id="dLines"></ul></div>
      <p class="dquote" id="dQuote"></p>
      <div class="dacts">
       <button class="pill dark arr" id="dSend" type="button"><span class="pi">Send request<span class="bd"><svg class="ico ur"><use href="#i-aur"/></svg></span></span></button>
@@ -743,16 +743,21 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
 /* ===== Pricing — edit these to set your own rates ===== */
 const PRICES = {
   metals: {
-    silver:{label:'Sterling silver',short:'Silver',per:45,colors:['white']},
-    k10:{label:'10K gold',short:'10K gold',per:95,colors:['yellow','white','rose']}
+    silver:{label:'Sterling silver',short:'Silver',per:60,colors:['white']},      // plain metal, per tooth (minimum)
+    k10:{label:'10K gold',short:'10K gold',per:130,colors:['yellow','white','rose']}  // plain metal, per tooth (minimum)
   },
-  finishes: { polished:{label:'Polished',add:0,desc:'Mirror-smooth metal. The classic, clean shine.'}, cut:{label:'Diamond-cut',add:35,desc:'Faceted grooves cut by hand so every angle flashes.'}, open:{label:'Open face',add:-15,desc:'A metal frame around the tooth, so your smile shows through.'}, iced:{label:'Iced',add:0,desc:'Fully set with stones, edge to edge. Maximum shine.'} },
-  diamonds: {                     // price added per fully iced tooth
-    si:{label:'Natural SI',short:'SI',group:'Natural',add:220},
-    vs:{label:'Natural VS',short:'VS',group:'Natural',add:300},
-    vvs:{label:'Natural VVS',short:'VVS',group:'Natural',add:400},
-    labvvs:{label:'Lab VVS',short:'Lab VVS',group:'Lab',add:160},
-    moissanite:{label:'Moissanite',short:'Moissanite',group:'Lab',add:90}
+  finishes: { polished:{label:'Polished',add:0,desc:'Mirror-smooth metal. The classic, clean shine.'}, cut:{label:'Diamond-cut',add:0,desc:'Faceted grooves cut by hand so every angle flashes.'}, open:{label:'Open face',add:0,desc:'A metal frame around the tooth, so your smile shows through.'}, iced:{label:'Iced',add:0,desc:'Fully set with stones, edge to edge. Maximum shine.'} },
+  diamonds: {
+    si:{label:'Natural SI',short:'SI',group:'Natural'},
+    vs:{label:'Natural VS',short:'VS',group:'Natural'},
+    vvs:{label:'Natural VVS',short:'VVS',group:'Natural'},
+    labvvs:{label:'Lab diamonds',short:'Lab diamonds',group:'Lab'},
+    moissanite:{label:'Moissanite',short:'Moissanite',group:'Lab'}
+  },
+  // Fully iced tooth: total price per tooth (minimum) by metal and stone. null = quoted after review.
+  iced: {
+    silver:{moissanite:150, labvvs:250, si:null, vs:null, vvs:null},
+    k10:   {moissanite:350, labvvs:450, si:null, vs:null, vvs:null}
   },
   turnaround:'3–4 weeks', rushTurnaround:'about 2 weeks',
   gem:60, fang:30, mold:25, rush:90
@@ -1101,7 +1106,7 @@ function stepTip(s){hcItem.classList.add(s>0?'up':'dn');setTimeout(()=>{tip=(tip
  void hcItem.offsetWidth;hcItem.classList.remove('now','up','dn')},220)}
 paintTip();$('#hcRow').addEventListener('click',e=>{if(e.target.closest('#hcPrev'))stepTip(-1);else stepTip(1)});
 $('#hcRow').addEventListener('keydown',e=>{if(e.target.id==='hcRow'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();stepTip(1)}});
-$('#metalList').innerHTML=['Silver','10K gold','SI','VS','VVS','Lab VVS','Moissanite'].map(n=>`<li><span class="hv">${icon('i-dot')}${n}</span></li>`).join('');
+$('#metalList').innerHTML=['Silver','10K gold','Moissanite','Lab diamonds','SI','VS','VVS'].map(n=>`<li><span class="hv">${icon('i-dot')}${n}</span></li>`).join('');
 
 /* ===== hero liquid reveal ===== */
 const HERO_BASE={top:['cut','polished','cut','polished','polished','cut','polished','cut'],bottom:[null,'polished','polished','polished','polished','polished','polished',null],metal:'k10',color:'yellow',fangs:true};
@@ -1157,17 +1162,17 @@ function f(s){return (s.brush==='erase'||s.brush==='gem')?'polished':s.brush}
 $('#presets').innerHTML=PRESETS.map(([l],i)=>`<button class="chip" data-preset="${i}">${l}</button>`).join('');
 $('#metals').innerHTML=Object.entries(PRICES.metals).map(([k,m])=>`<button class="chip" data-metal="${k}">${m.short}<small>${money(m.per)}</small></button>`).join('');
 $('#colors').innerHTML=Object.entries(COLORS).map(([k,c])=>`<button class="chip" data-color="${k}"><span class="dot" style="background:${c.c}"></span>${c.label}</button>`).join('');
-$('#dias').innerHTML=['Natural','Lab'].map(gp=>`<div class="dgrp"><span class="dgl">${gp==='Natural'?'Natural diamonds':'Lab stones'}</span><div class="chips">${Object.entries(PRICES.diamonds).filter(([,d])=>d.group===gp).map(([k,d])=>`<button class="chip" data-dia="${k}">${d.short}<small>+${money(d.add)}</small></button>`).join('')}</div></div>`).join('');
+$('#dias').innerHTML=['Natural','Lab'].map(gp=>`<div class="dgrp"><span class="dgl">${gp==='Natural'?'Natural diamonds':'Lab stones'}</span><div class="chips">${Object.entries(PRICES.diamonds).filter(([,d])=>d.group===gp).map(([k,d])=>`<button class="chip" data-dia="${k}">${d.short}<small></small></button>`).join('')}</div></div>`).join('');
 $('#extras').innerHTML=`<button class="swr" role="switch" data-x="fangs"><span>Fangs on top canines<small>+${money(PRICES.fang)} per fang</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="custom"><span>Custom design<small>Letters, hearts, snakes and more · quoted after review</small></span><span class="trk"></span></button><button class="swr" role="switch" data-x="rush"><span>Rush order<small>+${money(PRICES.rush)} · ready in ${PRICES.rushTurnaround}</small></span><span class="trk"></span></button>`;
 
 function calc(st=S){const m=PRICES.metals[st.metal];const g={};let n=0,sum=0,fangs=0,gems=0;
- ['top','bottom'].forEach(a=>st[a].forEach((fn,i)=>{if(!fn)return;n++;const p=m.per+(fn==='iced'?PRICES.diamonds[st.dia].add:PRICES.finishes[fn].add);
-  g[fn]=g[fn]||{c:0,s:0};g[fn].c++;g[fn].s+=p;sum+=p;if(a==='top'&&st.fangs&&(i===1||i===6))fangs++;if(st.gems[a][i])gems++}));
- const lines=FIN_KEYS.filter(k=>g[k]).map(k=>[`${g[k].c} × ${PRICES.finishes[k].label}${k==='iced'?' ('+PRICES.diamonds[st.dia].label.toLowerCase()+')':''}`,g[k].s]);
+ let quoted=false;['top','bottom'].forEach(a=>st[a].forEach((fn,i)=>{if(!fn)return;n++;const p=fn==='iced'?((PRICES.iced[st.metal]||{})[st.dia]??null):m.per+PRICES.finishes[fn].add;
+  g[fn]=g[fn]||{c:0,s:0,q:false};g[fn].c++;if(p==null){g[fn].q=true;quoted=true}else{g[fn].s+=p;sum+=p}if(a==='top'&&st.fangs&&(i===1||i===6))fangs++;if(st.gems[a][i])gems++}));
+ const lines=FIN_KEYS.filter(k=>g[k]).map(k=>[`${g[k].c} × ${PRICES.finishes[k].label}${k==='iced'?' ('+PRICES.diamonds[st.dia].label.toLowerCase()+')':''}`,g[k].q?'Quoted':g[k].s]);
  if(gems){lines.push([`${gems} × Gem accent`,gems*PRICES.gem]);sum+=gems*PRICES.gem}
  if(fangs){lines.push([`${fangs} × Fang shape`,fangs*PRICES.fang]);sum+=fangs*PRICES.fang}
  if(n){lines.push(['Mold kit',PRICES.mold]);sum+=PRICES.mold;if(st.rush){lines.push(['Rush order',PRICES.rush]);sum+=PRICES.rush}if(st.custom)lines.push(['Custom design','Quoted'])}
- return {n,sum,lines,gems,iced:!!g.iced,top:st.top.filter(Boolean).length,bot:st.bottom.filter(Boolean).length}}
+ return {n,sum,lines,gems,quoted,iced:!!g.iced,top:st.top.filter(Boolean).length,bot:st.bottom.filter(Boolean).length}}
 function metalName(st=S){const m=PRICES.metals[st.metal];return m.colors.length>1?`${m.label}, ${COLORS[st.color].label.toLowerCase()}`:m.label}
 function gemDesc(st=S){const k={};['top','bottom'].forEach(a=>st.gems[a].forEach(x=>{if(x)k[x]=(k[x]||0)+1}));return Object.entries(k).map(([g,n])=>`${n} ${GEMS[g].label.toLowerCase()}`).join(', ')}
 function summary(st=S){const c=calc(st);if(!c.n)return '';const desc=a=>{const k={};st[a].forEach(x=>{if(x)k[x]=(k[x]||0)+1});const t=Object.entries(k).map(([f,n])=>`${n} ${PRICES.finishes[f].label.toLowerCase()}`).join(', ');return t||'none'};
@@ -1184,13 +1189,13 @@ function draw(){const m=PRICES.metals[S.metal];if(!m.colors.includes(S.color))S.
  $$('[data-color]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.color===S.color);b.disabled=!m.colors.includes(b.dataset.color)});
  $('#colorNote').textContent=m.colors.length>1?'':`${m.short} comes in white only`;
  const c=calc();
- $$('[data-dia]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.dia===S.dia);b.disabled=!c.iced});
+ $$('[data-dia]').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.dia===S.dia);b.disabled=!c.iced;const v=(PRICES.iced[S.metal]||{})[b.dataset.dia];b.querySelector('small').textContent=v==null?'quote':money(v)});
  $('#diaNote').textContent=c.iced?'price per iced tooth':'paint a tooth Iced to choose';
  $$('[data-gem]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.gem===S.gemColor&&S.brush==='gem'));
  $$('[data-x]').forEach(b=>b.setAttribute('aria-checked',!!S[b.dataset.x]));
  $('#countLbl').innerHTML=`<b>${c.n}</b> ${c.n===1?'tooth':'teeth'} dressed · ${metalName()}`;
  $('#lines').innerHTML=c.lines.length?c.lines.map(([l,v])=>`<li><span>${l}</span><span>${typeof v==='number'?money(v):v}</span></li>`).join(''):`<li class="empty">No teeth yet. Try a quick start, or tap a tooth.</li>`;
- $('#eta').innerHTML=c.n&&S.custom?'Final price confirmed<br>after we review your idea':c.n?(S.rush?`Rush: ready in ${PRICES.rushTurnaround}<br>after we get your mold`:`Ready in ${PRICES.turnaround}<br>after we get your mold`):'Pick a tooth to start';
+ $('#eta').innerHTML=c.n&&c.quoted?'Natural diamonds are<br>quoted after review':c.n&&S.custom?'Final price confirmed<br>after we review your idea':c.n?(S.rush?`Rush: ready in ${PRICES.rushTurnaround}<br>after we get your mold`:`Ready in ${PRICES.turnaround}<br>after we get your mold`):'Pick a tooth to start';
  stopTween&&stopTween();const T=$('#total');if(RM){shown=c.sum;T.textContent=money(c.sum)}else stopTween=spring(shown,c.sum,{tension:210,friction:26,eps:.5,onUpdate:v=>{shown=v;T.textContent=money(v)}});
  try{localStorage.setItem('glint-build',JSON.stringify(S))}catch(e){}}
 
@@ -1249,7 +1254,7 @@ function mini(fin,p){if(G3O){const st={top:[null,null,fin,fin,fin,fin,null,null]
  G3O.render(st,{yaw:.32,pitch:.12,dist:6.4,target:[0,.55,-.1],bg:[srgb('#141414'),srgb('#0a0a0a')]},720,400);return `<img src="${G3O.canvas.toDataURL('image/jpeg',.9)}" alt="" style="width:100%;height:auto;border-radius:1rem">`}const u=100,ws=[.78,1,1,.78],hs=[1.05,1.25,1.25,1.05];let x=200-(3.56*u+.15*u)/2,out=defs(p,'yellow',u);
  ws.forEach((w,i)=>{const W=w*u,xc=x+W/2,t=(xc-200)/185;out+=`<g transform="translate(${R(xc)},${R(70-14*t*t)}) rotate(${(-t*5).toFixed(2)}) translate(${R(-W/2)},-10)">${toothSVG(fin,W,hs[i]*u,false,p+'c'+i,p,'yellow',true)}</g>`;x+=W+.05*u});
  return `<svg viewBox="0 0 400 220" aria-hidden="true">${out}${gum('top',200,70,u,3.71*u,p)}</svg>`}
-$('#cards').innerHTML=FIN_KEYS.map((k,i)=>{const F=PRICES.finishes[k];const minD=Math.min(...Object.values(PRICES.diamonds).map(d=>d.add)),from=PRICES.metals.silver.per+(k==='iced'?minD:F.add);
+$('#cards').innerHTML=FIN_KEYS.map((k,i)=>{const F=PRICES.finishes[k];const minD=Math.min(...Object.values(PRICES.iced).flatMap(o=>Object.values(o)).filter(v=>v!=null)),from=k==='iced'?minD:PRICES.metals.silver.per+F.add;
  return `<li class="card rv" style="--d:${i*90}ms"><a href="#build" data-use="${k}"><article class="art"><div class="meta"><span>Finish — 0${i+1}</span><span class="badge">${icon('i-aur')}</span></div>
  <div class="mini">${mini(k,'f'+i)}</div><div><h3>${F.label}</h3><p>${F.desc}</p><div class="tags"><span class="tag">From ${money(from)} / tooth</span><span class="tag go">Use this finish</span></div></div></article></a></li>`}).join('');
 document.addEventListener('click',e=>{const u=e.target.closest('[data-use]');if(!u)return;e.preventDefault();S.brush=u.dataset.use;
@@ -1348,7 +1353,7 @@ let DG=null,dView={yaw:.3,pitch:.14};const dgc=$('#dg3');
 function dDraw(low){if(!DG||!D.st)return;const sc=low?.55:2;DG.render(D.st,{yaw:dView.yaw,pitch:dView.pitch,dist:11.5},dgc.clientWidth*sc,dgc.clientHeight*sc)}
 function dPreview(){D.st=ansToState(D.ans);const c=calc(D.st);
  $('#dTotal').textContent=money(c.sum);$('#dLines').innerHTML=c.lines.map(([l,v])=>`<li><span>${l}</span><span>${typeof v==='number'?money(v):v}</span></li>`).join('');
- $('#dEta').innerHTML=D.st.custom?'Final price confirmed<br>after we review your idea':D.st.rush?`Rush: ${PRICES.rushTurnaround}`:`Ready in ${PRICES.turnaround}`;
+ $('#dEta').innerHTML=c.quoted?'Natural diamonds are<br>quoted after review':D.st.custom?'Final price confirmed<br>after we review your idea':D.st.rush?`Rush: ${PRICES.rushTurnaround}`:`Ready in ${PRICES.turnaround}`;
  const q=$('#dPrompt').value.trim();$('#dQuote').textContent=(q?'“'+q+'”':'')+(D.files.length?`${q?' · ':''}${D.files.length} reference photo${D.files.length>1?'s':''} attached`:'')+(D.ai&&D.ai.customNotes?` · By hand: ${D.ai.customNotes}`:'');
  if(!DG){try{DG=makeG3(dgc,false)}catch(e){DG=null}if(DG)attachOrbit(dgc,dView,dDraw);else $('#dView').innerHTML='<p class="note" style="padding:2rem;color:#fff">3D preview is not available on this device.</p>'}
  requestAnimationFrame(()=>dDraw(false))}
@@ -1531,9 +1536,9 @@ let tx=null;lb.addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passi
 const FAQ=[
  ['How do you get the fit right?','After you send your request, we mail you a mold kit. You take an impression of your teeth at home and send it back. Every piece is cast from that mold, so it fits only you.'],
  ['How long does it take?','Most sets are ready 3 to 4 weeks after we receive your mold. Need it sooner? Rush orders are done in about 2 weeks.'],
- ['What metals and stones do you offer?','Sterling silver and 10K gold in yellow, white or rose. For iced pieces: natural diamonds in SI, VS or VVS clarity, or lab stones: lab VVS diamonds and moissanite.'],
+ ['What metals and stones do you offer?','Sterling silver and 10K gold in yellow, white or rose. For iced pieces: moissanite, lab diamonds, or natural diamonds in SI, VS or VVS clarity. Natural diamond pieces are quoted after we review your design.'],
  ['Can you make something custom?','Yes. Letters, hearts, snakes, crosses, butterflies, coloured stones: if you can describe it, we can make it. Turn on Custom design in the builder, add notes or reference photos, and we will quote it.'],
- ['Is the builder price final?','It is an estimate. We confirm the final price after we see your mold and design, before you pay anything for production.'],
+ ['Is the builder price final?','It is a starting price. We confirm the final price after we see your mold and design, before you pay anything for production.'],
  ['How do I take care of my grill?','Take it out to eat, rinse it after wearing, brush gently with a soft toothbrush and mild soap, and keep it in its case. Avoid toothpaste on iced pieces, since it can dull the stones.'],
  ['Do you ship?','Yes, we ship worldwide. Your mold kit and your finished grill ship tracked and insured.'],
  ['How do I pay?','We take a deposit to start production and the balance before shipping. We will send payment details when we confirm your quote.']];
