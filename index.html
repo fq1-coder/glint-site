@@ -434,6 +434,10 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
 .dthumbs button{position:absolute;top:-.4rem;right:-.4rem;width:1.6rem;height:1.6rem;border-radius:9999px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:.6rem}
 .dnav{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.75rem;margin-top:1.5rem}
 .dnote{font-size:.875rem;color:rgba(17,17,17,.6);background:#fff;border-radius:1rem;padding:.8rem 1rem;margin-bottom:1.25rem;border-left:3px solid var(--accent)}
+.adslot{margin:2rem auto 0;width:100%;max-width:61rem;min-height:5.5rem;display:grid;place-items:center;border:1px dashed rgba(17,17,17,.18);border-radius:1rem;font-size:.75rem;color:rgba(17,17,17,.4);text-align:center}
+.adslot.dark{border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.4);margin-top:.5rem;min-height:4rem}
+.adslot.live{border:0;min-height:0;display:block}.adslot:empty{display:none}
+.faq+.shell .adslot{margin-bottom:5rem}
 .dhead{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.25rem}.dhead .dnote{flex:1;margin:0}.dref{display:flex;gap:.5rem;flex:none}.dref img{width:5.5rem;height:5.5rem;object-fit:cover;border-radius:.9rem}
 @media(max-width:640px){.dhead{flex-direction:column}}
 .dq{display:grid;grid-template-columns:minmax(0,1fr);gap:1.25rem}@media(min-width:900px){.dq{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem 2rem}}
@@ -539,7 +543,7 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
   <div class="flt" id="flt" role="group" aria-label="Filter work"></div></div>
  <div class="grid" id="grid"></div>
  <div class="more"><button class="pill ghostw" id="moreB" type="button"><span class="pi">Show all</span></button></div>
-</div></div></section>
+</div><div class="adslot" data-ad="gallery"></div></div></section>
 
 <section id="build" class="sec"><div class="shell bwrap">
  <div class="bhead">
@@ -652,7 +656,7 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
   <p>Fit, timing, care and custom work. Anything else, just ask.</p>
   <button class="pill dark arr" data-modal type="button"><span class="pi">Ask us<span class="bd"><svg class="ico ur"><use href="#i-aur"/></svg></span></span></button></div>
  <div id="faqList"></div>
-</div></section>
+</div><div class="shell"><div class="adslot" data-ad="faq"></div></div></section>
 </main>
 
 <footer><div class="shell fin2">
@@ -726,7 +730,7 @@ textarea.fc{resize:none}.fc[readonly]{font-size:.8rem;color:rgba(17,17,17,.7)}
    </div>
    <button class="swr" role="switch" id="toBottom" aria-checked="true" style="background:transparent;border-color:rgba(255,255,255,.15);color:#fff"><span>Show bottom teeth<small style="color:rgba(255,255,255,.5)">Turn off to try the top only</small></span><span class="trk"></span></button>
    <div class="dacts"><button class="pill light" id="toSnap" type="button"><span class="pi">Take photo</span></button><button class="pill ghostw" id="toReq" type="button"><span class="pi">Request this build</span></button></div>
-   <div class="to-out" id="toOut" hidden><img id="toOutImg" alt="Your try-on photo"><div class="dacts"><button class="small-b" id="toShare" type="button" hidden style="color:#fff;border-color:rgba(255,255,255,.25)">Share</button><a class="small-b" id="toDl" download="my-grill.jpg" style="color:#fff;border-color:rgba(255,255,255,.25);display:inline-flex;align-items:center">Save</a></div><span class="to-msg">If Save doesn't work, press and hold (or right-click) the photo.</span></div>
+   <div class="to-out" id="toOut" hidden><img id="toOutImg" alt="Your try-on photo"><div class="dacts"><button class="small-b" id="toShare" type="button" hidden style="color:#fff;border-color:rgba(255,255,255,.25)">Share</button><a class="small-b" id="toDl" download="my-grill.jpg" style="color:#fff;border-color:rgba(255,255,255,.25);display:inline-flex;align-items:center">Save</a></div><span class="to-msg">If Save doesn't work, press and hold (or right-click) the photo.</span><div class="adslot dark" data-ad="tryon"></div></div>
   </div>
  </div>
 </div>
@@ -775,6 +779,11 @@ const CONTACT = {
   email:'orders@yourshop.com',
   formEndpoint:''                  // optional: a Formspree/Basin form URL; requests also post there once the site is on your own domain
 };
+/* ===== Ads: paste your Google AdSense IDs here once approved. Ads only show in browsing spots
+   (under the gallery, under the FAQ, and after a try-on photo), never in the builder or checkout. ===== */
+const ADS={client:'',            // e.g. 'ca-pub-1234567890123456'
+  slots:{gallery:'',faq:'',tryon:''}, // ad unit IDs from AdSense, e.g. '1234567890'
+  showPlaceholders:true};        // set false before launch if you don't have ads yet (hides the empty 'Ad space' boxes)
 /* ===== AI design reader: the Describe step sends photos/text here (see api/design.js). Leave as is on Vercel; set '' to turn off. ===== */
 const AI={endpoint:'/api/design',timeoutMs:45000};
 const GEMS={ruby:{label:'Ruby',c:['#ffb3c2','#d0103a','#5e0016']},sapphire:{label:'Sapphire',c:['#b9d4ff','#1f5fd6','#0a1f5c']},emerald:{label:'Emerald',c:['#b9f5cf','#11a052','#04391c']},pink:{label:'Pink',c:['#ffd6ec','#f04fa3','#7a0f4a']},opal:{label:'Opal',c:['#ffffff','#9fe3ff','#b48cff']}};
@@ -941,8 +950,9 @@ vec3 diamond(vec3 n,vec3 V,float hs,float sec,vec3 tint){
 vec3 aces(vec3 c){float x=min(c.r,min(c.g,c.b));float off=x<.08?x-6.25*x*x:.04;c-=off;float pk=max(c.r,max(c.g,c.b));const float sc=.76;
  if(pk<sc)return clamp(c,0.,1.);const float d=1.-sc;float np=1.-d*d/(pk+d-sc);c*=np/pk;float g=1.-1./(.15*(pk-np)+1.);return clamp(mix(c,vec3(np),g),0.,1.);}
 vec3 toSRGB(vec3 c){return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
+float gStone=0.;
 vec3 shade(vec3 p,vec3 rd,float idf){
- vec3 n=nrm(p);vec3 V=-rd;float o=occ(p,n);vec3 sc=vec3(.84,.78,.66)*.36;float sh=mix(.35,1.,sshadow(p+n*.012,L1,9.));
+ gStone=0.;vec3 n=nrm(p);vec3 V=-rd;float o=occ(p,n);vec3 sc=vec3(.84,.78,.66)*.36;float sh=mix(.35,1.,sshadow(p+n*.012,L1,9.));
  if(idf>19.)return stoneM(sc,n,V,o,.08,p,sh);
  int i=int(idf+.5);vec4 C=tC[i];vec4 B=tB[i];vec3 col;
  if(C.x<.5){col=stoneM(sc*1.04,n,V,o,.22,p,sh);}
@@ -964,8 +974,8 @@ vec3 shade(vec3 p,vec3 rd,float idf){
     else{mode=3;float an=atan(ge.y,ge.x);sec=floor(an/.7854+.5);vec2 fd=vec2(cos(sec*.7854),sin(sec*.7854));tl=gr<.38?vec2(0.):fd*mix(.25,.7,(gr-.38)/.42);}}}
   vec3 nn=normalize(n+Tx*tl.x+Ty*tl.y);
   if(mode==1)col=stoneM(sc*1.04,n,V,o*.8,.22,p,sh);
-  else if(mode==2)col=diamond(nn,V,hs,sec,tint*(.85+.3*hs))*mix(.5,1.,o)*mix(.75,1.,sh);
-  else if(mode==3){int gi=int(C.y+.5);vec3 gc=uGem[gi];
+  else if(mode==2){gStone=1.;col=diamond(nn,V,hs,sec,tint*(.85+.3*hs))*mix(.5,1.,o)*mix(.75,1.,sh);}
+  else if(mode==3){gStone=1.;int gi=int(C.y+.5);vec3 gc=uGem[gi];
    if(gi==5){gc=(.55+.45*cos(6.2832*(vn(p*14.)*1.5+vec3(0.,.33,.67))))*vec3(.8,.9,1.);}
    vec3 r=reflect(-V,nn);vec3 r2=rX(rY(r,sec*.8),.6);
    col=gc*(env(r2)*.55+.12)+env(r)*.05+pow(max(dot(r,L1),0.),500.)*20.;col*=mix(.6,1.,o);}
@@ -986,7 +996,7 @@ void main(){
  if(id<0.){if(rd.y<0.){float tf2=(-2.18-ro.y)/rd.y;vec3 pf=ro+rd*tf2;if(abs(pf.x)<6.&&pf.z>-4.&&pf.z<3.){float dm=map(pf+vec3(0,.02,0)).x;
   float ss=sshadow(pf+vec3(0,.02,0),normalize(vec3(.1,1.,.3)),2.5);float fd=smoothstep(6.,3.5,abs(pf.x))*smoothstep(-4.,-2.,pf.z)*smoothstep(3.,1.2,pf.z);bg*=mix(1.,mix(uLight>.5?.8:.6,1.,ss)*mix(.72,1.,smoothstep(0.,.5,dm)),fd);}}
   bg+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(bg,1.);return;}
- vec3 c=shade(ro+rd*t,rd,id);c=toSRGB(aces(c*1.0));if(uTry>.5){O=vec4(c,1.);return;}c*=mix(.9,1.,smoothstep(1.1,.35,length(sv-.5)*1.4));c+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(c,1.);}`;
+ vec3 c=shade(ro+rd*t,rd,id);c=toSRGB(aces(c*1.0));if(uTry>.5){O=vec4(c,gStone>.5?.976:1.);return;}c*=mix(.9,1.,smoothstep(1.1,.35,length(sv-.5)*1.4));c+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(c,1.);}`;
 const G3_VERT=`#version 300 es
 in vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 const ARCH_K=.075,GUM_T=1.25,GUM_B=-1.2,ARCH_BZ=-.16,TTK=[.85,.8,.62,.7,.7,.62,.8,.85],BTK=[.85,.78,.6,.58,.58,.6,.78,.85];
@@ -1375,11 +1385,12 @@ $('#dSend').onclick=()=>{const q=$('#dPrompt').value.trim();const n=[q?'My idea:
 $('#dTry').onclick=()=>openTry(D.st);
 
 /* ===== try on: live face-tracking filter ===== */
-/* Fit tuning: span = how wide the canine-to-canine width is vs the inside of the mouth;
-   lipTop / lipBottom = how far the gum line sits behind the lips (share of mouth width). */
-const TRY={span:.8,lipTop:.035,lipBottom:.035,yawGain:1.8,mpVersion:'0.10.14'};
-const TO={x:0,y:0,w:0,rot:0,gap:45,bottom:true,mode:'none',stream:null,fl:null,flP:null,st:null,box:null,sprites:null,size:1,off:0,sm:null,lum:.5,lumN:0,face:false,photoL:null};
+/* Fit tuning: span = canine-to-canine width vs the inside of the mouth; lipTop / lipBottom = how far the gum line sits behind the lips. */
+const TRY={span:.8,lipTop:.035,lipBottom:.035,yawGain:1.8,mpVersion:'0.10.14',glints:true};
+const TO={mode:'none',stream:null,fl:null,flP:null,flMode:null,st:null,box:null,sprites:null,size:1,off:0,lum:.5,lumN:0,photoL:null,
+ x:0,y:0,w:0,rot:0,gap:45,bottom:true,vis:0,filt:null,yawF:null,lastVT:-1,lastL:null,lastSeen:0,raf:0};
 const toEl=$('#to'),ts=$('#ts'),toG=$('#toGrill'),toCv=$('#toCv'),tctx=toCv.getContext('2d'),toMsg=t=>$('#toMsg').textContent=t;
+const OC=document.createElement('canvas'),octx=OC.getContext('2d'),MK=document.createElement('canvas'),mctx=MK.getContext('2d');
 const FKT=2*Math.tan(14*Math.PI/180),YAWS=[-.5,-.33,-.16,0,.16,.33,.5];
 const LIPS=[78,191,80,81,82,13,312,311,310,415,308,324,318,402,317,14,87,178,88,95];
 const USED=[...new Set([...LIPS,61,291,1,234,454])];
@@ -1387,14 +1398,22 @@ const onlyArch=(st,a)=>({...st,top:a==='top'?st.top:Array(8).fill(null),bottom:a
 function camB(v){const cp=Math.cos(v.pitch),t=v.target,pos=[t[0]+v.dist*Math.sin(v.yaw)*cp,t[1]+v.dist*Math.sin(v.pitch),t[2]+v.dist*Math.cos(v.yaw)*cp];
  const nz=q=>{const l=Math.hypot(...q);return q.map(x=>x/l)};const f=nz([t[0]-pos[0],t[1]-pos[1],t[2]-pos[2]]);const r=nz([-f[2],0,f[0]]);const up=[r[1]*f[2]-r[2]*f[1],r[2]*f[0]-r[0]*f[2],r[0]*f[1]-r[1]*f[0]];return {pos,f,r,up}}
 function projP(B,P,W,H){const d=[P[0]-B.pos[0],P[1]-B.pos[1],P[2]-B.pos[2]],dt=q=>d[0]*q[0]+d[1]*q[1]+d[2]*q[2];const z=dt(B.f);return [W/2+dt(B.r)/z/FKT*H,H/2-dt(B.up)/z/FKT*H]}
-function cropCanvas(src,W,H){const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0);const d=x.getImageData(0,0,W,H).data;let bb=[W,H,0,0];
+/* crop a render, and find stone pixels (the renderer marks them with alpha 249) for sparkle points */
+function cropSprite(src,W,H){const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0);const d=x.getImageData(0,0,W,H).data;let bb=[W,H,0,0];
  for(let y=0;y<H;y+=2)for(let i=0;i<W;i+=2)if(d[(y*W+i)*4+3]>10){bb[0]=Math.min(bb[0],i);bb[1]=Math.min(bb[1],y);bb[2]=Math.max(bb[2],i);bb[3]=Math.max(bb[3],y)}
  if(bb[2]<=bb[0])return null;const p=6,cx=Math.max(0,bb[0]-p),cy=Math.max(0,bb[1]-p),cw=Math.min(W,bb[2]+p)-cx,ch=Math.min(H,bb[3]+p)-cy;
- const o=document.createElement('canvas');o.width=cw;o.height=ch;o.getContext('2d').drawImage(c,cx,cy,cw,ch,0,0,cw,ch);return {cv:o,cx,cy}}
+ const cand=[];const cell=9,seen=new Set();
+ for(let y=cy;y<cy+ch;y+=3)for(let i=cx;i<cx+cw;i+=3){const k=(y*W+i)*4,al=d[k+3];if(al>=240&&al<=253){const lum=(d[k]+d[k+1]+d[k+2])/765;if(lum>.62){const key=((i/cell)|0)+'_'+((y/cell)|0);if(!seen.has(key)){seen.add(key);cand.push([i-cx,y-cy,lum])}}}}
+ for(let i=cand.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[cand[i],cand[j]]=[cand[j],cand[i]]}
+ const glints=cand.slice(0,70).map(([gx,gy,l])=>({x:gx,y:gy,ph:Math.random()*6.283,sp:1.4+Math.random()*2.6,sz:.6+Math.random()*.8,l}));
+ const o=document.createElement('canvas');o.width=cw;o.height=ch;const ox=o.getContext('2d');ox.drawImage(c,cx,cy,cw,ch,0,0,cw,ch);
+ // make stone-tag alpha fully opaque so stones don't look see-through
+ const id=ox.getImageData(0,0,cw,ch),dd=id.data;for(let k=3;k<dd.length;k+=4)if(dd[k]>=240)dd[k]=255;ox.putImageData(id,0,0);
+ return {cv:o,cx,cy,glints}}
 function makeSprites(st){if(!G3O)return null;const W=760,H=520,out=[];
  for(const yaw of YAWS){const v={yaw,pitch:0,dist:7.2,target:[0,-.02,0],tryon:true,light:true},B=camB(v),rec={yaw};
-  for(const a of ['top','bottom']){const so=onlyArch(st,a);if(!so[a].some(Boolean)){rec[a]=null;continue}G3O.render(so,v,W,H);const c=cropCanvas(G3O.canvas,W,H);if(!c){rec[a]=null;continue}
-   const g=projP(B,a==='top'?[0,GUM_T,.3]:[0,GUM_B,ARCH_BZ+.3],W,H);rec[a]={cv:c.cv,ax:g[0]-c.cx,ay:g[1]-c.cy}}
+  for(const a of ['top','bottom']){const so=onlyArch(st,a);if(!so[a].some(Boolean)){rec[a]=null;continue}G3O.render(so,v,W,H);const c=cropSprite(G3O.canvas,W,H);if(!c){rec[a]=null;continue}
+   const g=projP(B,a==='top'?[0,GUM_T,.3]:[0,GUM_B,ARCH_BZ+.3],W,H);rec[a]={cv:c.cv,ax:g[0]-c.cx,ay:g[1]-c.cy,glints:c.glints}}
   rec.gumGap=projP(B,[0,GUM_B,ARCH_BZ+.3],W,H)[1]-projP(B,[0,GUM_T,.3],W,H)[1];
   const c1=projP(B,[LAYT.xs[1],GUM_T-.55,LAYT.zs[1]+.3],W,H),c6=projP(B,[LAYT.xs[6],GUM_T-.55,LAYT.zs[6]+.3],W,H);rec.span=Math.hypot(c6[0]-c1[0],c6[1]-c1[1]);out.push(rec)}
  return out}
@@ -1406,52 +1425,85 @@ function loadTracker(){if(TO.flP)return TO.flP;TO.flP=(async()=>{const V='https:
  try{TO.fl=await M.FaceLandmarker.createFromOptions(fs,opt('GPU'))}catch(e){TO.fl=await M.FaceLandmarker.createFromOptions(fs,opt('CPU'))}TO.flMode='VIDEO';return TO.fl})();
  TO.flP.catch(()=>{TO.flP=null});return TO.flP}
 async function setFlMode(m){if(TO.fl&&TO.flMode!==m){await TO.fl.setOptions({runningMode:m});TO.flMode=m}}
-/* geometry helpers */
-function sizeCv(){const r=ts.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);if(toCv.width!==Math.round(r.width*d)||toCv.height!==Math.round(r.height*d)){toCv.width=Math.round(r.width*d);toCv.height=Math.round(r.height*d)}tctx.setTransform(d,0,0,d,0,0);return r}
+/* One Euro filter: removes jitter when still, stays responsive when moving */
+class OneEuro{constructor(mc,b){this.mc=mc;this.b=b;this.x=null;this.dx=0;this.t=0}
+ a(c,dt){const r=2*Math.PI*c*dt;return r/(r+1)}
+ f(v,t){if(this.x===null){this.x=v;this.t=t;return v}const dt=Math.max(.001,(t-this.t)/1000);this.t=t;const d=(v-this.x)/dt;this.dx+=this.a(1,dt)*(d-this.dx);
+  const c=this.mc+this.b*Math.abs(this.dx);this.x+=this.a(c,dt)*(v-this.x);return this.x}}
+function filtPts(L,map,t,still){if(!TO.filt||still){TO.filt={};USED.forEach(i=>TO.filt[i]=[new OneEuro(1.1,.025),new OneEuro(1.1,.025)])}
+ const P={};USED.forEach(i=>{const p=map(L[i]);P[i]=still?p:[TO.filt[i][0].f(p[0],t),TO.filt[i][1].f(p[1],t)]});return P}
+/* canvas sizing + video/photo mapping */
+function sizeCv(){const r=ts.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2),W=Math.round(r.width*d),H=Math.round(r.height*d);
+ for(const c of [toCv,OC,MK])if(c.width!==W||c.height!==H){c.width=W;c.height=H}tctx.setTransform(d,0,0,d,0,0);octx.setTransform(d,0,0,d,0,0);mctx.setTransform(d,0,0,d,0,0);return r}
 function mapper(sw,sh,r,mirror){const sc=Math.max(r.width/sw,r.height/sh),dw=sw*sc,dh=sh*sc,ox=(r.width-dw)/2,oy=(r.height-dh)/2;return p=>[ox+(mirror?1-p.x:p.x)*dw,oy+p.y*dh]}
-function smoothPts(L,map,k){const cur={};USED.forEach(i=>cur[i]=map(L[i]));if(!TO.sm||k>=1){TO.sm=cur;return cur}USED.forEach(i=>{const o=TO.sm[i],c=cur[i];o[0]+=(c[0]-o[0])*k;o[1]+=(c[1]-o[1])*k});return TO.sm}
-function sampleLum(src,sw,sh){if(TO.lumN++%12)return;try{const c=sampleLum.c||(sampleLum.c=document.createElement('canvas'));c.width=c.height=16;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,sw,sh,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=0;for(let i=0;i<d.length;i+=4)s+=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];TO.lum=s/(256*255)}catch(e){}}
-function drawGrill(P,mirror,r){tctx.clearRect(0,0,r.width,r.height);if(!TO.sprites)return false;
- let a=P[78],b=P[308];if(a[0]>b[0])[a,b]=[b,a];const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),mw=Math.hypot(b[0]-a[0],b[1]-a[1]);if(mw<8)return false;
+function sampleLum(src,sw,sh){if(TO.lumN++%10)return;try{const c=sampleLum.c||(sampleLum.c=document.createElement('canvas'));c.width=c.height=16;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(src,0,0,sw,sh,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let s=0;for(let i=0;i<d.length;i+=4)s+=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];const L=s/(256*255);TO.lum+=(L-TO.lum)*.3}catch(e){}}
+/* geometry from landmarks */
+function faceGeo(P,mirror){let a=P[78],b=P[308];if(a[0]>b[0])[a,b]=[b,a];const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),mw=Math.hypot(b[0]-a[0],b[1]-a[1]);
  const up=[Math.sin(ang),-Math.cos(ang)];const c1=P[234],c2=P[454],n=P[1];const ratio=(n[0]-(c1[0]+c2[0])/2)/Math.max(1,Math.abs(c2[0]-c1[0]));
- const yaw=Math.max(-.5,Math.min(.5,(mirror?1:-1)*ratio*TRY.yawGain));let k=0,bd=9;YAWS.forEach((y,i)=>{if(Math.abs(y-yaw)<bd){bd=Math.abs(y-yaw);k=i}});const sp=TO.sprites[k];
- const sc=mw*TRY.span*TO.size/sp.span;
+ const yaw=Math.max(-.5,Math.min(.5,(mirror?1:-1)*ratio*TRY.yawGain));
  const poly=LIPS.map(i=>P[i]);const cx=poly.reduce((s,p)=>s+p[0],0)/poly.length,cy=poly.reduce((s,p)=>s+p[1],0)/poly.length;
- let area=0;poly.forEach((p,i)=>{const q=poly[(i+1)%poly.length];area+=p[0]*q[1]-q[0]*p[1]});if(Math.abs(area)/2<mw*mw*.012)return true; // mouth closed: no teeth showing
- tctx.save();tctx.beginPath();poly.forEach((p,i)=>{const x=cx+(p[0]-cx)*1.07,y=cy+(p[1]-cy)*1.1;i?tctx.lineTo(x,y):tctx.moveTo(x,y)});tctx.closePath();tctx.clip();
- try{tctx.filter=`brightness(${Math.max(.6,Math.min(1.2,.62+TO.lum*.75)).toFixed(2)})`}catch(e){}
- const put=(S,ax,ay)=>{if(!S)return;tctx.save();tctx.translate(ax,ay);tctx.rotate(ang);tctx.scale(mirror?-sc:sc,sc);tctx.drawImage(S.cv,-S.ax,-S.ay);tctx.restore()};
- const t=P[13],btm=P[14],o=TO.off*mw;
- put(sp.top,t[0]+up[0]*(TRY.lipTop*mw+o),t[1]+up[1]*(TRY.lipTop*mw+o));
- if(TO.bottom)put(sp.bottom,btm[0]-up[0]*(TRY.lipBottom*mw-o),btm[1]-up[1]*(TRY.lipBottom*mw-o));
- tctx.restore();return true}
+ let area=0;poly.forEach((p,i)=>{const q=poly[(i+1)%poly.length];area+=p[0]*q[1]-q[0]*p[1]});const open=Math.abs(area)/2/Math.max(1,mw*mw);
+ return {ang,mw,up,yaw,poly,cx,cy,open,t:P[13],btm:P[14]}}
+/* draw one frame of the filter */
+function drawSprite(ctx,S,x,y,ang,sc,mirror,alpha){if(!S||alpha<=.003)return;ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(ang);ctx.scale(mirror?-sc:sc,sc);ctx.drawImage(S.cv,-S.ax,-S.ay);ctx.restore()}
+function drawGlints(ctx,S,x,y,ang,sc,mirror,now,motion,alpha){if(!S||!S.glints||!TRY.glints||alpha<=.05)return;ctx.save();ctx.globalCompositeOperation='lighter';ctx.translate(x,y);ctx.rotate(ang);ctx.scale(mirror?-1:1,1);
+ const base=Math.max(2.2,sc*9);for(const g of S.glints){const w=Math.sin(now/1000*g.sp+g.ph+motion*1.7);let k=Math.max(0,w);k=k*k*k*k*k*k;if(k<.04)continue;
+  const gx=(g.x-S.ax)*sc,gy=(g.y-S.ay)*sc,r=base*g.sz*(.6+.8*k),a=alpha*k*(.55+.45*g.l);
+  const gr=ctx.createRadialGradient(gx,gy,0,gx,gy,r);gr.addColorStop(0,`rgba(255,255,255,${a})`);gr.addColorStop(.35,`rgba(235,245,255,${a*.45})`);gr.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gr;ctx.beginPath();ctx.arc(gx,gy,r,0,6.2832);ctx.fill();
+  ctx.strokeStyle=`rgba(255,255,255,${a*.8})`;ctx.lineWidth=Math.max(.6,r*.08);const L=r*2.4;ctx.beginPath();ctx.moveTo(gx-L,gy);ctx.lineTo(gx+L,gy);ctx.moveTo(gx,gy-L*.8);ctx.lineTo(gx,gy+L*.8);ctx.stroke()}
+ ctx.restore()}
+function renderFrame(G,mirror,r,now,motion){tctx.clearRect(0,0,r.width,r.height);if(!TO.sprites||!G)return;
+ const target=G.open<.012?0:Math.min(1,(G.open-.012)/.02);TO.vis+=(target-TO.vis)*.25;if(TO.vis<.01)return;
+ const yv=Math.max(YAWS[0],Math.min(YAWS[YAWS.length-1],G.yaw));let i=0;while(i<YAWS.length-2&&yv>YAWS[i+1])i++;const w=(yv-YAWS[i])/(YAWS[i+1]-YAWS[i]);
+ const A=TO.sprites[i],B=TO.sprites[i+1],span=A.span*(1-w)+B.span*w,sc=G.mw*TRY.span*TO.size/span,o=TO.off*G.mw;
+ const tp=[G.t[0]+G.up[0]*(TRY.lipTop*G.mw+o),G.t[1]+G.up[1]*(TRY.lipTop*G.mw+o)],bp=[G.btm[0]-G.up[0]*(TRY.lipBottom*G.mw-o),G.btm[1]-G.up[1]*(TRY.lipBottom*G.mw-o)];
+ octx.save();octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,OC.width,OC.height);octx.restore();
+ // bottom first: the top teeth sit in front of the bottom ones
+ for(const [spA,spB,p] of [...(TO.bottom?[[A.bottom,B.bottom,bp]]:[]),[A.top,B.top,tp]]){drawSprite(octx,spA,p[0],p[1],G.ang,sc,mirror,1-w);drawSprite(octx,spB,p[0],p[1],G.ang,sc,mirror,w)}
+ // match the room: darken in dim light, lip shadow along the inside of the upper lip
+ octx.save();octx.globalCompositeOperation='source-atop';const dk=Math.max(0,.52-TO.lum)*.9;if(dk>0){octx.fillStyle=`rgba(0,0,0,${dk.toFixed(3)})`;octx.fillRect(0,0,r.width,r.height)}
+ const sh=G.mw*.16,g1=octx.createLinearGradient(G.t[0]+G.up[0]*sh*.2,G.t[1]+G.up[1]*sh*.2,G.t[0]-G.up[0]*sh,G.t[1]-G.up[1]*sh);g1.addColorStop(0,'rgba(20,8,8,.5)');g1.addColorStop(1,'rgba(20,8,8,0)');octx.fillStyle=g1;octx.fillRect(0,0,r.width,r.height);
+ const g2=octx.createLinearGradient(G.btm[0]-G.up[0]*sh*.15,G.btm[1]-G.up[1]*sh*.15,G.btm[0]+G.up[0]*sh*.7,G.btm[1]+G.up[1]*sh*.7);g2.addColorStop(0,'rgba(20,8,8,.35)');g2.addColorStop(1,'rgba(20,8,8,0)');octx.fillStyle=g2;octx.fillRect(0,0,r.width,r.height);octx.restore();
+ // diamonds glisten: twinkles that also fire as the head moves
+ const ga=w<.5?1:0;for(const [S1,S2,p] of [...(TO.bottom?[[A.bottom,B.bottom,bp]]:[]),[A.top,B.top,tp]])drawGlints(octx,w<.5?S1:S2,p[0],p[1],G.ang,sc,mirror,now,motion,1);
+ // soft-edged lip mask: only the mouth opening shows the grill
+ mctx.save();mctx.setTransform(1,0,0,1,0,0);mctx.clearRect(0,0,MK.width,MK.height);mctx.restore();
+ const d=Math.min(devicePixelRatio||1,2),fe=Math.max(1.2,G.mw*.014),off=10000;mctx.save();mctx.shadowColor='#000';mctx.shadowBlur=fe*d;mctx.shadowOffsetX=off*d;mctx.fillStyle='#000';mctx.beginPath();
+ G.poly.forEach((p,k)=>{const x=G.cx+(p[0]-G.cx)*1.07-off,y=G.cy+(p[1]-G.cy)*1.17;k?mctx.lineTo(x,y):mctx.moveTo(x,y)});mctx.closePath();mctx.fill();mctx.restore();
+ octx.save();octx.setTransform(1,0,0,1,0,0);octx.globalCompositeOperation='destination-in';octx.drawImage(MK,0,0);octx.restore();
+ tctx.save();tctx.globalAlpha=TO.vis;tctx.setTransform(1,0,0,1,0,0);tctx.drawImage(OC,0,0);tctx.restore()}
 /* modes */
 function setMode(m){TO.mode=m;$('.fit-auto').hidden=m==='manual';$('.fit-man').hidden=m!=='manual';toG.hidden=m!=='manual';if(m!=='manual'){const r=sizeCv();tctx.clearRect(0,0,r.width,r.height)}
- $('#toShot').hidden=!(m==='live'||m==='photo'||m==='manual');$('#toEmpty').hidden=m!=='none';$('#toLive').classList.toggle('on',m==='live')}
+ $('#toShot').hidden=!(m==='live'||m==='photo'||m==='manual');$('#toEmpty').hidden=m!=='none';$('#toLive').classList.toggle('on',m==='live');if(m==='live'||m==='photo')startLoop()}
 async function startLive(){const v=$('#toVid');stopLive(true);$('#toEmptyH').textContent='Starting your camera…';$('#toEmptyP').textContent='Allow camera access, then smile with your teeth showing.';
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){noCam();return}
  try{TO.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720},height:{ideal:1280}},audio:false})}catch(e){TO.stream=null;noCam(e);return}
- v.srcObject=TO.stream;v.hidden=false;$('#toPhoto').hidden=true;try{await v.play()}catch(e){}TO.sm=null;setMode('live');badge('Loading face tracking…');
- try{await loadTracker();await setFlMode('VIDEO');badge('Smile and show your teeth');toMsg('The grill finds your teeth by itself. Use Size or Move to fine-tune.');liveLoop()}
+ v.srcObject=TO.stream;v.hidden=false;$('#toPhoto').hidden=true;try{await v.play()}catch(e){}TO.filt=null;TO.yawF=null;TO.vis=0;TO.lastL=null;setMode('live');badge('Loading face tracking…');
+ try{await loadTracker();await setFlMode('VIDEO');badge('Smile and show your teeth');toMsg('The grill finds your teeth by itself. Use Size or Move to fine-tune.')}
  catch(e){badge('');toMsg('Face tracking could not load, so place the grill by hand.');manualOn()}}
 function noCam(err){setMode('none');const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
  $('#toEmptyH').textContent=framed?'Live camera is off in this preview':(err&&err.name==='NotAllowedError'?'Camera access was blocked':'Take a selfie to try it on');
  $('#toEmptyP').textContent=framed?'This preview page blocks cameras. Live try-on works on the published website. For now, take a selfie or upload a photo.':(err&&err.name==='NotAllowedError'?'Allow camera access for this site in your browser settings, then tap Live camera again. Or take a selfie instead.':"We couldn't open your camera. Take a selfie or upload a photo instead.");toMsg('')}
 function stopLive(keep){if(TO.stream){TO.stream.getTracks().forEach(t=>t.stop());TO.stream=null}const v=$('#toVid');v.hidden=true;v.srcObject=null;if(!keep&&TO.mode==='live')setMode('none')}
-let lastT=-1;
-function liveLoop(){if(TO.mode!=='live'||!TO.stream)return;const v=$('#toVid');
- if(v.readyState>=2&&v.videoWidth){const now=performance.now();if(now>lastT){lastT=now;let res=null;try{res=TO.fl.detectForVideo(v,now)}catch(e){}
-  const r=sizeCv(),L=res&&res.faceLandmarks&&res.faceLandmarks[0];sampleLum(v,v.videoWidth,v.videoHeight);
-  if(L){const P=smoothPts(L,mapper(v.videoWidth,v.videoHeight,r,true),.55);drawGrill(P,true,r);if(!TO.face){TO.face=true;badge('')}}
-  else{tctx.clearRect(0,0,r.width,r.height);TO.sm=null;if(TO.face!==false){TO.face=false}badge('Point the camera at your face')}}}
- requestAnimationFrame(liveLoop)}
 function badge(t){const b=$('#toBadge');b.textContent=t;b.hidden=!t}
-async function showPhoto(file){if(!file)return;stopLive(true);const im=$('#toPhoto');await new Promise(res=>{im.onload=res;im.onerror=res;im.src=URL.createObjectURL(file)});im.hidden=false;$('#toOut').hidden=true;TO.sm=null;setMode('photo');badge('Finding your teeth…');
+/* one animation loop for live video and still photos */
+let prevG=null;
+function startLoop(){if(TO.raf)return;const tick=now=>{TO.raf=0;if(toEl.hidden||!(TO.mode==='live'||TO.mode==='photo'))return;const r=sizeCv();let G=null,mirror=false;
+  if(TO.mode==='live'){const v=$('#toVid');mirror=true;
+   if(TO.fl&&v.readyState>=2&&v.videoWidth){if(v.currentTime!==TO.lastVT){TO.lastVT=v.currentTime;let res=null;try{res=TO.fl.detectForVideo(v,now)}catch(e){}const L=res&&res.faceLandmarks&&res.faceLandmarks[0];
+     if(L){TO.lastL=L;TO.lastSeen=now;badge('')}else if(now-TO.lastSeen>400){TO.lastL=null;TO.filt=null;badge('Point the camera at your face')}}
+    sampleLum(v,v.videoWidth,v.videoHeight);if(TO.lastL)G=faceGeo(filtPts(TO.lastL,mapper(v.videoWidth,v.videoHeight,r,true),now,false),true)}}
+  else if(TO.photoL){const im=$('#toPhoto');G=faceGeo(filtPts(TO.photoL,mapper(im.naturalWidth,im.naturalHeight,r,false),now,true),false)}
+  if(G){if(!TO.yawF)TO.yawF=new OneEuro(.8,.4);G.yaw=TO.yawF.f(G.yaw,now)}
+  const motion=G&&prevG?(Math.abs(G.cx-prevG.cx)+Math.abs(G.cy-prevG.cy))/Math.max(1,G.mw)*6+Math.abs(G.yaw-prevG.yaw)*8+now/4000:now/4000;prevG=G;
+  if(G)renderFrame(G,mirror,r,now,motion);else{TO.vis+=(0-TO.vis)*.25;if(TO.vis<.01)tctx.clearRect(0,0,r.width,r.height)}
+  TO.raf=requestAnimationFrame(tick)};TO.raf=requestAnimationFrame(tick)}
+async function showPhoto(file){if(!file)return;stopLive(true);const im=$('#toPhoto');await new Promise(res=>{im.onload=res;im.onerror=res;im.src=URL.createObjectURL(file)});im.hidden=false;$('#toOut').hidden=true;TO.photoL=null;TO.vis=0;setMode('photo');badge('Finding your teeth…');
  try{await loadTracker();await setFlMode('IMAGE');const res=TO.fl.detect(im);const L=res&&res.faceLandmarks&&res.faceLandmarks[0];
   if(!L){badge('');toMsg("We couldn't find a face in that photo, so place the grill by hand.");manualOn();return}
-  TO.photoL=L;TO.lumN=0;sampleLum(im,im.naturalWidth,im.naturalHeight);redrawPhoto();badge('');toMsg('Found you. Use Size or Move to fine-tune.')}
+  TO.photoL=L;TO.lumN=0;sampleLum(im,im.naturalWidth,im.naturalHeight);TO.lum=TO.lum;badge('');toMsg('Found you. Use Size or Move to fine-tune.')}
  catch(e){badge('');toMsg('Automatic placement is not available here, so drag the grill onto your mouth.');manualOn()}}
-function redrawPhoto(){if(TO.mode!=='photo'||!TO.photoL)return;const im=$('#toPhoto'),r=sizeCv();drawGrill(smoothPts(TO.photoL,mapper(im.naturalWidth,im.naturalHeight,r,false),1),false,r)}
+function redrawPhoto(){}
 function manualOn(){setMode('manual');TO.w=0;requestAnimationFrame(layoutTry)}
 function layoutTry(){if(TO.mode!=='manual'||!TO.box)return;const r=ts.getBoundingClientRect();if(!TO.w){TO.w=r.width*.42;TO.x=r.width/2;TO.y=r.height*.62}
  const gapPx=(TO.gap-45)/100*TO.w*.35;$('#toBot').style.transform=`translateY(${gapPx}px)`;$('#toBot').style.display=TO.bottom?'':'none';
@@ -1463,19 +1515,19 @@ function manualBox(){const sp=TO.sprites&&TO.sprites[3];if(!sp)return null;const
  const mk=(p,y)=>{const x=document.createElement('canvas');x.width=W;x.height=H;if(p)x.getContext('2d').drawImage(p.cv,-minX-p.ax,y-p.ay);return x.toDataURL('image/png')};
  return {urls:{top:mk(sp.top,yT),bottom:mk(sp.bottom,yB)},aspect:H/W}}
 function openTry(st){TO.st=st||S;if(!calc(TO.st).n)TO.st=ansToState({teeth:'top6',style:'polished',metal:'k10',color:'yellow',dia:'labvvs',gem:'none',fangs:false,custom:false,rush:false});
- toEl.hidden=false;stopScroll();requestAnimationFrame(()=>requestAnimationFrame(()=>toEl.classList.add('open')));$('#toOut').hidden=true;toMsg('');
- TO.sprites=makeSprites(TO.st);if(!TO.sprites){setMode('none');$('#toEmptyH').textContent='Try-on needs a device with 3D support';$('#toEmptyP').textContent='';return}
- TO.box=manualBox();if(TO.box){$('#toTop').src=TO.box.urls.top;$('#toBot').src=TO.box.urls.bottom}
- TO.bottom=TO.st.bottom.some(Boolean);$('#toBottom').setAttribute('aria-checked',TO.bottom);TO.size=1;TO.off=0;$('#toFitS').value=100;$('#toFitY').value=0;
- setMode('none');startLive();$('#toX').focus()}
-function closeTry(){if(toEl.hidden)return;stopLive();TO.mode='none';toEl.classList.remove('open');setTimeout(()=>{toEl.hidden=true;startScroll()},300)}
+ toEl.hidden=false;stopScroll();requestAnimationFrame(()=>requestAnimationFrame(()=>toEl.classList.add('open')));$('#toOut').hidden=true;toMsg('');setMode('none');
+ $('#toEmptyH').textContent='Preparing your grill…';$('#toEmptyP').textContent='';$('#toX').focus();
+ setTimeout(()=>{TO.sprites=makeSprites(TO.st);if(!TO.sprites){$('#toEmptyH').textContent='Try-on needs a device with 3D support';return}
+  TO.box=manualBox();if(TO.box){$('#toTop').src=TO.box.urls.top;$('#toBot').src=TO.box.urls.bottom}
+  TO.bottom=TO.st.bottom.some(Boolean);$('#toBottom').setAttribute('aria-checked',TO.bottom);TO.size=1;TO.off=0;$('#toFitS').value=100;$('#toFitY').value=0;startLive()},40)}
+function closeTry(){if(toEl.hidden)return;stopLive();TO.mode='none';if(TO.raf){cancelAnimationFrame(TO.raf);TO.raf=0}toEl.classList.remove('open');setTimeout(()=>{toEl.hidden=true;startScroll()},300)}
 $('#toX').onclick=closeTry;$('#tryB').onclick=()=>openTry(S);
 $('#toSelfie').addEventListener('change',e=>{showPhoto(e.target.files[0]);e.target.value=''});
 $('#toUpload').addEventListener('change',e=>{showPhoto(e.target.files[0]);e.target.value=''});
 $('#toLive').onclick=()=>{if(TO.mode==='live'){stopLive();noCam()}else startLive()};
-$('#toFitS').oninput=e=>{TO.size=e.target.value/100;redrawPhoto()};
-$('#toFitY').oninput=e=>{TO.off=-e.target.value/100;redrawPhoto()};
-$('#toBottom').onclick=()=>{TO.bottom=!TO.bottom;$('#toBottom').setAttribute('aria-checked',TO.bottom);redrawPhoto();layoutTry()};
+$('#toFitS').oninput=e=>{TO.size=e.target.value/100};
+$('#toFitY').oninput=e=>{TO.off=-e.target.value/100};
+$('#toBottom').onclick=()=>{TO.bottom=!TO.bottom;$('#toBottom').setAttribute('aria-checked',TO.bottom);layoutTry()};
 /* manual placement fallback: drag, pinch, wheel */
 let dragT=null;const pts=new Map();
 ts.addEventListener('pointerdown',e=>{if(TO.mode!=='manual'||e.target.closest('.shutter'))return;e.preventDefault();dragT={x:e.clientX,y:e.clientY,ox:TO.x,oy:TO.y};try{ts.setPointerCapture(e.pointerId)}catch(_){}});
@@ -1493,11 +1545,20 @@ function capture(){const r=ts.getBoundingClientRect(),k=2,c=document.createEleme
  const sc=Math.max(r.width/sw,r.height/sh);x.save();if(live){x.translate(r.width,0);x.scale(-1,1)}x.drawImage(src,(r.width-sw*sc)/2,(r.height-sh*sc)/2,sw*sc,sh*sc);x.restore();
  if(TO.mode==='manual'&&TO.box){const h=TO.w*TO.box.aspect;x.save();x.translate(TO.x,TO.y);x.rotate(TO.rot*Math.PI/180);x.drawImage($('#toTop'),-TO.w/2,-h/2,TO.w,h);if(TO.bottom)x.drawImage($('#toBot'),-TO.w/2,-h/2+(TO.gap-45)/100*TO.w*.35,TO.w,h);x.restore()}
  else x.drawImage(toCv,0,0,r.width,r.height);
+ const fl=document.createElement('div');fl.style.cssText='position:absolute;inset:0;background:#fff;opacity:.85;transition:opacity .4s;pointer-events:none;z-index:4';ts.append(fl);requestAnimationFrame(()=>{fl.style.opacity='0';setTimeout(()=>fl.remove(),450)});
  c.toBlob(bl=>{if(!bl)return;const u=URL.createObjectURL(bl);$('#toOutImg').src=u;$('#toDl').href=u;$('#toOut').hidden=false;const f=new File([bl],'my-grill.jpg',{type:'image/jpeg'});
   const sh2=$('#toShare');sh2.hidden=!(navigator.canShare&&navigator.canShare({files:[f]}));sh2.onclick=()=>navigator.share({files:[f],title:'My grill'}).catch(()=>{});toMsg('Photo ready below.')},'image/jpeg',.92)}
 $('#toShot').onclick=capture;$('#toSnap').onclick=capture;
-new ResizeObserver(()=>{if(TO.mode==='photo')redrawPhoto();if(TO.mode==='manual')layoutTry()}).observe(ts);
+new ResizeObserver(()=>{if(TO.mode==='manual')layoutTry()}).observe(ts);
 $('#toReq').onclick=()=>{const st=TO.st;closeTry();setTimeout(()=>openModal('',st),320)};
+
+/* ===== ad slots ===== */
+(function initAds(){const els=$$('.adslot[data-ad]');
+ if(ADS.client){const sc=document.createElement('script');sc.async=true;sc.crossOrigin='anonymous';sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+encodeURIComponent(ADS.client);document.head.append(sc);
+  els.forEach(el=>{const id=ADS.slots[el.dataset.ad];if(!id){el.textContent='';return}el.classList.add('live');el.textContent='';const ins=document.createElement('ins');ins.className='adsbygoogle';ins.style.display='block';
+   ins.setAttribute('data-ad-client',ADS.client);ins.setAttribute('data-ad-slot',id);ins.setAttribute('data-ad-format','auto');ins.setAttribute('data-full-width-responsive','true');el.append(ins);
+   try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch(e){}})}
+ else els.forEach(el=>{el.textContent=ADS.showPlaceholders?'Ad space':''})})();
 
 /* ===== contact links ===== */
 const SOC=[['Instagram','https://instagram.com/'+CONTACT.instagram],['TikTok','https://tiktok.com/@'+CONTACT.tiktok],['WhatsApp','https://wa.me/'+CONTACT.whatsapp.replace(/\D/g,'')]];
