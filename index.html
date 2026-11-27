@@ -903,7 +903,7 @@ float rectL(vec3 r,vec3 c,float w,float h,float sf){float d=dot(r,c);if(d<=0.)re
  vec3 rt=normalize(cross(vec3(0,1,0),c));vec3 up=cross(c,rt);float x=dot(pr,rt),y=dot(pr,up);
  return smoothstep(w,w-sf,abs(x))*smoothstep(h,h-sf,abs(y));}
 vec3 env(vec3 r){
- vec3 c=vec3(.012,.012,.014)+vec3(.03,.028,.025)*max(r.y,0.)+uLight*vec3(.3,.3,.29)*(.6+.4*r.y);
+ vec3 c=vec3(.10,.10,.10)+vec3(.22,.22,.22)*smoothstep(-.2,.9,r.y)+uLight*vec3(.25)*(.6+.4*r.y);
  c+=vec3(1.,.96,.9)*1.25*smoothstep(-.15,.95,r.z)*smoothstep(-.7,.35,r.y);
  c+=7.*rectL(r,normalize(vec3(0.,.75,.66)),.9,.35,.25);
  c+=4.5*rectL(r,normalize(vec3(-.8,.1,.6)),.12,1.2,.08);
@@ -932,7 +932,9 @@ vec3 diamond(vec3 n,vec3 V,float hs,float sec,vec3 tint){
  vec3 c=e*1.5*mix(vec3(1.),fire,.35)*tint;
  float g=pow(max(dot(r,L1),0.),600.)*40.+pow(max(dot(r2,L1),0.),300.)*10.;
  return c+g*mix(vec3(1.),fire,.3);}
-vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
+vec3 aces(vec3 c){float x=min(c.r,min(c.g,c.b));float off=x<.08?x-6.25*x*x:.04;c-=off;float pk=max(c.r,max(c.g,c.b));const float sc=.76;
+ if(pk<sc)return clamp(c,0.,1.);const float d=1.-sc;float np=1.-d*d/(pk+d-sc);c*=np/pk;float g=1.-1./(.15*(pk-np)+1.);return clamp(mix(c,vec3(np),g),0.,1.);}
+vec3 toSRGB(vec3 c){return mix(c*12.92,1.055*pow(c,vec3(1./2.4))-.055,step(.0031308,c));}
 vec3 shade(vec3 p,vec3 rd,float idf){
  vec3 n=nrm(p);vec3 V=-rd;float o=occ(p,n);vec3 sc=vec3(.84,.78,.66)*.36;float sh=mix(.35,1.,sshadow(p+n*.012,L1,9.));
  if(idf>19.)return stoneM(sc,n,V,o,.08,p,sh);
@@ -960,7 +962,7 @@ vec3 shade(vec3 p,vec3 rd,float idf){
   else if(mode==3){int gi=int(C.y+.5);vec3 gc=uGem[gi];
    if(gi==5){gc=(.55+.45*cos(6.2832*(vn(p*14.)*1.5+vec3(0.,.33,.67))))*vec3(.8,.9,1.);}
    vec3 r=reflect(-V,nn);vec3 r2=rX(rY(r,sec*.8),.6);
-   col=gc*(env(r2)*.9+.25)+env(r)*.12+pow(max(dot(r,L1),0.),500.)*20.;col*=mix(.6,1.,o);}
+   col=gc*(env(r2)*.55+.12)+env(r)*.05+pow(max(dot(r,L1),0.),500.)*20.;col*=mix(.6,1.,o);}
   else col=metal(uMetal,nn,V,o,sh);}
  if(abs(idf-uHover)<.5)col+=vec3(1.,.78,.35)*(.12+.5*pow(1.-clamp(dot(n,V),0.,1.),3.));
  return col;}
@@ -976,15 +978,15 @@ void main(){
  else bg+=vec3(.08)*smoothstep(.8,0.,length((sv-vec2(.5,.5))));
  if(id<0.&&uTry>.5){O=vec4(0.);return;}
  if(id<0.){if(rd.y<0.){float tf2=(-2.18-ro.y)/rd.y;vec3 pf=ro+rd*tf2;if(abs(pf.x)<6.&&pf.z>-4.&&pf.z<3.){float dm=map(pf+vec3(0,.02,0)).x;
-  float ss=sshadow(pf+vec3(0,.02,0),normalize(vec3(.1,1.,.3)),2.5);bg*=mix(uLight>.5?.8:.6,1.,ss)*mix(.72,1.,smoothstep(0.,.5,dm));}}
+  float ss=sshadow(pf+vec3(0,.02,0),normalize(vec3(.1,1.,.3)),2.5);float fd=smoothstep(6.,3.5,abs(pf.x))*smoothstep(-4.,-2.,pf.z)*smoothstep(3.,1.2,pf.z);bg*=mix(1.,mix(uLight>.5?.8:.6,1.,ss)*mix(.72,1.,smoothstep(0.,.5,dm)),fd);}}
   bg+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(bg,1.);return;}
- vec3 c=shade(ro+rd*t,rd,id);c=pow(aces(c*1.05),vec3(1./2.2));if(uTry>.5){O=vec4(c,1.);return;}c*=mix(.9,1.,smoothstep(1.1,.35,length(sv-.5)*1.4));c+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(c,1.);}`;
+ vec3 c=shade(ro+rd*t,rd,id);c=toSRGB(aces(c*1.0));if(uTry>.5){O=vec4(c,1.);return;}c*=mix(.9,1.,smoothstep(1.1,.35,length(sv-.5)*1.4));c+=(h12(gl_FragCoord.xy)-.5)*.012;O=vec4(c,1.);}`;
 const G3_VERT=`#version 300 es
 in vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 const ARCH_K=.075,GUM_T=1.25,GUM_B=-1.2,ARCH_BZ=-.16,TTK=[.85,.8,.62,.7,.7,.62,.8,.85],BTK=[.85,.78,.6,.58,.58,.6,.78,.85];
 const FIN_CODE={polished:1,cut:2,open:3,iced:4},GEM_CODE={ruby:1,sapphire:2,emerald:3,pink:4,opal:5};
-const F0C={yellow:{k10:[.98,.77,.4],k14:[1,.71,.29],k18:[1,.66,.22]},rose:{k10:[.97,.74,.62],k14:[.97,.7,.56],k18:[.96,.66,.52]},white:{silver:[.97,.96,.93],k10:[.9,.89,.86],k14:[.91,.9,.88],k18:[.92,.91,.89],plat:[.83,.82,.8]}};
-const GEMLIN=[0,0,0,.55,.01,.05,.02,.08,.55,.01,.42,.12,.85,.12,.4,.9,.9,.95];
+const F0C={yellow:{k10:[1.0,.71,.32]},rose:{k10:[.96,.6,.5]},white:{silver:[.99,.98,.96],k10:[.74,.76,.79]}}; // linear reflectance: 10K yellow gold, 10K rose gold, sterling silver, rhodium-plated white gold
+const GEMLIN=[0,0,0,.62,0.,.025,.01,.05,.6,0.,.4,.08,.92,.1,.3,.9,.9,.95];
 function archLay(W,gap,bz){const tot=W.reduce((a,b)=>a+b,0)+gap*7;
  const arc=x=>{let s=0,n=200,dx=x/n;for(let i=0;i<n;i++){const xm=(i+.5)*dx;s+=Math.sqrt(1+(2*ARCH_K*xm)**2)*dx}return s};
  const xAt=s=>{let lo=0,hi=6;const sg=Math.sign(s),as=Math.abs(s);for(let k=0;k<40;k++){const m=(lo+hi)/2;if(arc(m)<as)lo=m;else hi=m}return sg*(lo+hi)/2};
